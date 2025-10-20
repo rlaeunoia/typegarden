@@ -1131,23 +1131,37 @@ document.body.appendChild(centerMsg);
   garden.addEventListener('click', ()=>{ gInfo.style.display='none'; });
 
   function animate(){
-    requestAnimationFrame(animate);
-    let beat=0;
-    if (analyser && freqArr){
-      analyser.getByteFrequencyData(freqArr);
-      let sum=0,n=0; for(let i=2;i<30 && i<freqArr.length;i++){ sum+=freqArr[i]; n++; }
-      beat=(n? (sum/n):0)/255;
-    }
-    const t = performance.now()/1000;
-    const imgs = garden.querySelectorAll('.gflower');
-    imgs.forEach((el)=>{
-      const ph=parseFloat(el.dataset.phase||0);
-      const rot  = Math.sin(t*1.6 + ph) * (6 + beat*10);
-      const sway = Math.sin(t*2.1 + ph) * (4 + beat*8);
-      const skew = Math.sin(t*1.1 + ph) * (1 + beat*3);
-      el.style.transform = 'translateX(' + sway + 'px) rotate(' + rot + 'deg) skewY(' + skew + 'deg)';
-    });
+  requestAnimationFrame(animate);
+
+  // 비트 에너지
+  let beat = 0;
+  if (analyser && freqArr){
+    analyser.getByteFrequencyData(freqArr);
+    let sum = 0, n = 0;
+    for (let i = 2; i < 40 && i < freqArr.length; i++){ sum += freqArr[i]; n++; }
+    beat = (n ? (sum / n) : 0) / 255;
   }
+
+  const t = performance.now() / 1000;
+  const imgs = garden.querySelectorAll('.gflower');
+
+  imgs.forEach(function(el){
+    const ph   = parseFloat(el.dataset.phase || 0);
+    const rot  = Math.sin(t*1.6 + ph) * (6 + beat*10);
+    const sway = Math.sin(t*2.1 + ph) * (4 + beat*8);
+    const skew = Math.sin(t*1.1 + ph) * (1 + beat*3);
+
+    // 펄스(확대/축소)
+    var pulse = 1 + beat*0.12 + Math.sin(t*2.0 + ph)*0.03;
+    pulse = Math.max(0.95, Math.min(1.15, pulse));
+
+    el.style.transform =
+      'scale(' + pulse + ')' +
+      ' rotate(' + rot + 'deg)' +
+      ' skewY(' + skew + 'deg)' +
+      ' translateX(' + sway + 'px)';
+  });
+}
 
   document.getElementById('backBtn').addEventListener('click', ()=>{
     if (window.opener || window.history.length <= 1) { try { window.close(); return; } catch(_) {} }
